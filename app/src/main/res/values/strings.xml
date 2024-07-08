@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MovieList</string>
+    <string name="nothing_found">Nothing Found</string>
+    <string name="something_went_wrong">Something went wrong</string>
+</resources>
