@@ -1,4 +1,4 @@
-package com.heepov.movielist
+package com.heepov.movielist.ui.movies
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -6,6 +6,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.heepov.movielist.R
+import com.heepov.movielist.domain.models.Movie
 
 class MovieViewHolder(parent: ViewGroup) :
     RecyclerView.ViewHolder(

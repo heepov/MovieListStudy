@@ -1,7 +1,8 @@
-package com.heepov.movielist
+package com.heepov.movielist.ui.movies
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.heepov.movielist.domain.models.Movie
 
 class MoviesAdapter(private val clickListener: MovieClickListener) : RecyclerView.Adapter<MovieViewHolder>() {
 

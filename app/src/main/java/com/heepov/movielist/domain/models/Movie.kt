@@ -1,4 +1,4 @@
-package com.heepov.movielist
+package com.heepov.movielist.domain.models
 
 import com.google.gson.annotations.SerializedName
 
