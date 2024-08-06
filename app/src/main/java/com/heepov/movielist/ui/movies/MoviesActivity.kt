@@ -19,6 +19,7 @@ import com.heepov.movielist.ui.poster.PosterActivity
 import com.heepov.movielist.R
 import com.heepov.movielist.domain.models.Movie
 import com.heepov.movielist.presentation.movies.MoviesView
+import com.heepov.movielist.ui.movies.models.MoviesState
 import com.heepov.movielist.util.Creator
 
 class MoviesActivity : Activity(), MoviesView {
@@ -94,25 +95,33 @@ class MoviesActivity : Activity(), MoviesView {
         return current
     }
 
+    override fun render(state: MoviesState) {
+        when{
+            state.isLoading -> showLoading()
+            state.errorMessage != null -> showError(state.errorMessage)
+            else -> showContent(state.movies)
+        }
+    }
 
-    override fun showLoading() {
+
+    fun showLoading() {
         progressBar.visibility = View.VISIBLE
         moviesList.visibility = View.GONE
         placeholderMessage.visibility = View.GONE
     }
 
-    override fun showError(errorMessage: String) {
+    fun showError(errorMessage: String) {
         progressBar.visibility = View.GONE
         moviesList.visibility = View.GONE
         placeholderMessage.visibility = View.VISIBLE
         placeholderMessage.text = errorMessage
     }
 
-    override fun showEmpty(emptyMessage: String) {
+    fun showEmpty(emptyMessage: String) {
         showError(emptyMessage)
     }
 
-    override fun showContent(movies: List<Movie>) {
+    fun showContent(movies: List<Movie>) {
         progressBar.visibility = View.GONE
         moviesList.visibility = View.VISIBLE
         placeholderMessage.visibility = View.GONE

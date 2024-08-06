@@ -19,6 +19,7 @@ import com.heepov.movielist.util.Creator
 import com.heepov.movielist.domain.api.MoviesInteractor
 import com.heepov.movielist.domain.models.Movie
 import com.heepov.movielist.ui.movies.MoviesAdapter
+import com.heepov.movielist.ui.movies.models.MoviesState
 
 class MoviesSearchPresenter(
     private val view: MoviesView,
@@ -52,7 +53,13 @@ class MoviesSearchPresenter(
 
     private fun searchRequest(newSearchText: String) {
         if (newSearchText.isNotEmpty()) {
-            view.showLoading()
+            view.render(
+                MoviesState(
+                    movies = movies,
+                    isLoading = true,
+                    errorMessage = null,
+                )
+            )
             moviesInteractor.searchMovies(
                 newSearchText,
                 object : MoviesInteractor.MoviesConsumer {
@@ -64,13 +71,31 @@ class MoviesSearchPresenter(
                             }
                             when {
                                 errorMessage!= null -> {
-                                    view.showError(context.getString(R.string.something_went_wrong))
+                                    view.render(
+                                        MoviesState(
+                                            movies = emptyList(),
+                                            isLoading = false,
+                                            errorMessage = context.getString(R.string.something_went_wrong),
+                                        )
+                                    )
                                 }
                                 movies.isEmpty() -> {
-                                    view.showEmpty(context.getString(R.string.nothing_found))
+                                    view.render(
+                                        MoviesState(
+                                            movies = emptyList(),
+                                            isLoading = false,
+                                            errorMessage = context.getString(R.string.nothing_found),
+                                        )
+                                    )
                                 }
                                 else -> {
-                                    view.showContent(movies)
+                                    view.render(
+                                        MoviesState(
+                                            movies = movies,
+                                            isLoading = false,
+                                            errorMessage = null
+                                        )
+                                    )
                                 }
                             }
                         }
