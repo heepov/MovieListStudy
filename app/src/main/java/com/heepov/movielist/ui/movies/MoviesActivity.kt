@@ -27,6 +27,7 @@ class MoviesActivity : Activity(), MoviesView {
 
     companion object {
         private const val CLICK_DEBOUNCE_DELAY = 1000L
+        private var moviesSearchPresenter:MoviesSearchPresenter? = null
     }
 
     private val adapter = MoviesAdapter {
@@ -41,7 +42,7 @@ class MoviesActivity : Activity(), MoviesView {
 
     private val handler = Handler(Looper.getMainLooper())
 
-    private var moviesSearchPresenter:MoviesSearchPresenter? = null
+
 
     private lateinit var queryInput: EditText
     private lateinit var placeholderMessage: TextView
@@ -54,7 +55,6 @@ class MoviesActivity : Activity(), MoviesView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_movies)
 
-        moviesSearchPresenter = lastNonConfigurationInstance as? MoviesSearchPresenter
         if (moviesSearchPresenter == null) {
             moviesSearchPresenter = Creator.provideMoviesSearchPresenter(
                 moviesView = this,
@@ -90,10 +90,6 @@ class MoviesActivity : Activity(), MoviesView {
         super.onDestroy()
         textWatcher?.let { queryInput.removeTextChangedListener(it) }
         moviesSearchPresenter?.onDestroy()
-    }
-
-    override fun onRetainNonConfigurationInstance(): Any? {
-        return moviesSearchPresenter
     }
 
 
