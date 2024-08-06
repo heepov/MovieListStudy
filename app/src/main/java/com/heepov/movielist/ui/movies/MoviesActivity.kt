@@ -94,29 +94,36 @@ class MoviesActivity : Activity(), MoviesView {
         return current
     }
 
-    override fun showPlaceholderMessage(isVisible: Boolean) {
-        placeholderMessage.isVisible = isVisible
+
+    override fun showLoading() {
+        progressBar.visibility = View.VISIBLE
+        moviesList.visibility = View.GONE
+        placeholderMessage.visibility = View.GONE
     }
 
-    override fun showMoviesList(isVisible: Boolean) {
-        moviesList.isVisible = isVisible
+    override fun showError(errorMessage: String) {
+        progressBar.visibility = View.GONE
+        moviesList.visibility = View.GONE
+        placeholderMessage.visibility = View.VISIBLE
+        placeholderMessage.text = errorMessage
     }
 
-    override fun showProgressBar(isVisible: Boolean) {
-        progressBar.isVisible = isVisible
+    override fun showEmpty(emptyMessage: String) {
+        showError(emptyMessage)
     }
 
-    override fun changePlaceholderText(newPlaceholderText: String) {
-        placeholderMessage.text = newPlaceholderText
-    }
+    override fun showContent(movies: List<Movie>) {
+        progressBar.visibility = View.GONE
+        moviesList.visibility = View.VISIBLE
+        placeholderMessage.visibility = View.GONE
 
-    override fun updateMoviesList(newMoviesList: List<Movie>) {
         adapter.movies.clear()
-        adapter.movies.addAll(newMoviesList)
+        adapter.movies.addAll(movies)
         adapter.notifyDataSetChanged()
+
     }
 
-    override fun showToastMessage(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    override fun showToast(additionalMessage: String) {
+        Toast.makeText(this, additionalMessage, Toast.LENGTH_LONG).show()
     }
 }

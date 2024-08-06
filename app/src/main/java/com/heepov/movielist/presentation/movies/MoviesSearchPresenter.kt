@@ -52,52 +52,31 @@ class MoviesSearchPresenter(
 
     private fun searchRequest(newSearchText: String) {
         if (newSearchText.isNotEmpty()) {
-            view.showPlaceholderMessage(false)
-            view.showMoviesList(false)
-            view.showProgressBar(true)
-
+            view.showLoading()
             moviesInteractor.searchMovies(
                 newSearchText,
                 object : MoviesInteractor.MoviesConsumer {
                     override fun consume(foundMovies: List<Movie>?, errorMessage: String?) {
                         handler.post {
-                            view.showProgressBar(false)
                             if (foundMovies != null) {
                                 movies.clear()
                                 movies.addAll(foundMovies)
-                                view.updateMoviesList(movies)
-                                view.showMoviesList(true)
                             }
-                            if (errorMessage != null) {
-                                showMessage(context.getString(R.string.something_went_wrong), errorMessage)
-                            } else if (movies.isEmpty()) {
-                                showMessage(context.getString(R.string.nothing_found), "")
-                            } else {
-                                hideMessage()
+                            when {
+                                errorMessage!= null -> {
+                                    view.showError(context.getString(R.string.something_went_wrong))
+                                }
+                                movies.isEmpty() -> {
+                                    view.showEmpty(context.getString(R.string.nothing_found))
+                                }
+                                else -> {
+                                    view.showContent(movies)
+                                }
                             }
                         }
                     }
                 }
             )
         }
-    }
-
-    private fun showMessage(text: String, additionalMessage: String) {
-        if (text.isNotEmpty()) {
-            view.showPlaceholderMessage(true)
-            movies.clear()
-            view.updateMoviesList(movies)
-
-            view.changePlaceholderText(text)
-            if (additionalMessage.isNotEmpty()) {
-                view.showToastMessage(additionalMessage)
-            }
-        } else {
-            view.showPlaceholderMessage(false)
-        }
-    }
-
-    private fun hideMessage() {
-        view.showPlaceholderMessage(false)
     }
 }
