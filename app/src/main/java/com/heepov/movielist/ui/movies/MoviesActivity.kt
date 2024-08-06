@@ -12,9 +12,9 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.heepov.movielist.MoviesApplication
 import com.heepov.movielist.ui.poster.PosterActivity
 import com.heepov.movielist.R
 import com.heepov.movielist.domain.models.Movie
@@ -25,10 +25,23 @@ import com.heepov.movielist.util.Creator
 
 class MoviesActivity : Activity(), MoviesView {
 
+    override fun onStart() {
+        super.onStart()
+        moviesSearchPresenter?.attachView(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        moviesSearchPresenter?.attachView(this)
+    }
+
+
+
+
     companion object {
         private const val CLICK_DEBOUNCE_DELAY = 1000L
-        private var moviesSearchPresenter:MoviesSearchPresenter? = null
     }
+    private var moviesSearchPresenter:MoviesSearchPresenter? = null
 
     private val adapter = MoviesAdapter {
         if (clickDebounce()) {
@@ -55,12 +68,15 @@ class MoviesActivity : Activity(), MoviesView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_movies)
 
+        moviesSearchPresenter = (this.applicationContext as? MoviesApplication)?.moviesSearchPresenter
+
         if (moviesSearchPresenter == null) {
             moviesSearchPresenter = Creator.provideMoviesSearchPresenter(
-                moviesView = this,
-                context = this
+                context = this.applicationContext
             )
+            (this.application as? MoviesApplication)?.moviesSearchPresenter = moviesSearchPresenter
         }
+        moviesSearchPresenter?.attachView(this)
 
         placeholderMessage = findViewById(R.id.placeholderMessage)
         queryInput = findViewById(R.id.queryInput)
@@ -86,10 +102,30 @@ class MoviesActivity : Activity(), MoviesView {
         textWatcher?.let { queryInput.addTextChangedListener(it) }
     }
 
+    override fun onPause() {
+        super.onPause()
+        moviesSearchPresenter?.detachView()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        moviesSearchPresenter?.detachView()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        moviesSearchPresenter?.detachView()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         textWatcher?.let { queryInput.removeTextChangedListener(it) }
         moviesSearchPresenter?.onDestroy()
+        moviesSearchPresenter?.detachView()
+
+        if (isFinishing){
+            (this.application as? MoviesApplication)?.moviesSearchPresenter = null
+        }
     }
 
 

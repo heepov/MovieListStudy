@@ -22,12 +22,16 @@ import com.heepov.movielist.ui.movies.MoviesAdapter
 import com.heepov.movielist.ui.movies.models.MoviesState
 
 class MoviesSearchPresenter(
-    private val view: MoviesView,
     private val context: Context,
 ) {
     companion object {
         private const val SEARCH_DEBOUNCE_DELAY = 2000L
     }
+
+    private var view: MoviesView? = null
+    private var state: MoviesState? = null
+    private var latestSearchText: String? = null
+
 
     private val moviesInteractor = Creator.provideMoviesInteractor(context)
     private val handler = Handler(Looper.getMainLooper())
@@ -40,12 +44,28 @@ class MoviesSearchPresenter(
         searchRequest(newSearchText)
     }
 
+    fun attachView(view: MoviesView) {
+        this.view = view
+        state?.let {view.render(it)}
+    }
+
+    fun detachView() {
+        this.view = null
+    }
+
+
     fun onDestroy() {
         handler.removeCallbacks(searchRunnable)
     }
 
 
     fun searchDebounce(changedText: String) {
+        if (latestSearchText == changedText) {
+            return
+        }
+
+        this.latestSearchText = changedText
+
         this.lastSearchText = changedText
         handler.removeCallbacks(searchRunnable)
         handler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY)
@@ -53,39 +73,51 @@ class MoviesSearchPresenter(
 
     private fun searchRequest(newSearchText: String) {
         if (newSearchText.isNotEmpty()) {
-            view.render(
-                MoviesState.Loading
-            )
-            moviesInteractor.searchMovies(
-                newSearchText,
-                object : MoviesInteractor.MoviesConsumer {
-                    override fun consume(foundMovies: List<Movie>?, errorMessage: String?) {
-                        handler.post {
-                            if (foundMovies != null) {
-                                movies.clear()
-                                movies.addAll(foundMovies)
+            renderState(MoviesState.Loading)
+
+            moviesInteractor.searchMovies(newSearchText, object : MoviesInteractor.MoviesConsumer {
+                override fun consume(foundMovies: List<Movie>?, errorMessage: String?) {
+                    handler.post {
+                        val movies = mutableListOf<Movie>()
+                        if (foundMovies != null) {
+                            movies.addAll(foundMovies)
+                        }
+
+                        when {
+                            errorMessage != null -> {
+                                renderState(
+                                    MoviesState.Error(
+                                        errorMessage = context.getString(R.string.something_went_wrong),
+                                    )
+                                )
+                                view?.showToast(errorMessage)
                             }
-                            when {
-                                errorMessage!= null -> {
-                                    view.render(
-                                        MoviesState.Error(errorMessage = context.getString(R.string.something_went_wrong))
+
+                            movies.isEmpty() -> {
+                                renderState(
+                                    MoviesState.Empty(
+                                        message = context.getString(R.string.nothing_found),
                                     )
-                                }
-                                movies.isEmpty() -> {
-                                    view.render(
-                                        MoviesState.Empty(message = context.getString(R.string.nothing_found))
+                                )
+                            }
+
+                            else -> {
+                                renderState(
+                                    MoviesState.Content(
+                                        movies = movies,
                                     )
-                                }
-                                else -> {
-                                    view.render(
-                                        MoviesState.Content(movies = movies)
-                                    )
-                                }
+                                )
                             }
                         }
+
                     }
                 }
-            )
+            })
         }
+    }
+
+    private fun renderState(state: MoviesState) {
+        this.state = state
+        this.view?.render(state)
     }
 }

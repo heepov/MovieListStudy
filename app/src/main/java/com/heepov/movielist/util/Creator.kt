@@ -23,11 +23,9 @@ object Creator {
 
 
     fun provideMoviesSearchPresenter(
-        moviesView: MoviesView,
         context: Context,
     ): MoviesSearchPresenter {
         return MoviesSearchPresenter(
-            view = moviesView,
             context = context,
         )
     }
