@@ -96,10 +96,11 @@ class MoviesActivity : Activity(), MoviesView {
     }
 
     override fun render(state: MoviesState) {
-        when{
-            state.isLoading -> showLoading()
-            state.errorMessage != null -> showError(state.errorMessage)
-            else -> showContent(state.movies)
+        when(state){
+            is MoviesState.Loading -> showLoading()
+            is MoviesState.Error -> showError(state.errorMessage)
+            is MoviesState.Empty -> showEmpty(state.message)
+            is MoviesState.Content -> showContent(state.movies)
         }
     }
 
