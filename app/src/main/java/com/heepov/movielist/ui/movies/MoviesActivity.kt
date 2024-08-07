@@ -22,26 +22,26 @@ import com.heepov.movielist.presentation.movies.MoviesSearchPresenter
 import com.heepov.movielist.presentation.movies.MoviesView
 import com.heepov.movielist.ui.movies.models.MoviesState
 import com.heepov.movielist.util.Creator
+import moxy.MvpActivity
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
 
-class MoviesActivity : Activity(), MoviesView {
+class MoviesActivity : MvpActivity(), MoviesView {
 
-    override fun onStart() {
-        super.onStart()
-        moviesSearchPresenter?.attachView(this)
+    @InjectPresenter
+    lateinit var moviesSearchPresenter:MoviesSearchPresenter
+
+    @ProvidePresenter
+    fun providePresenter(): MoviesSearchPresenter {
+        return Creator.provideMoviesSearchPresenter(
+            context = this.applicationContext,
+        )
     }
-
-    override fun onResume() {
-        super.onResume()
-        moviesSearchPresenter?.attachView(this)
-    }
-
-
 
 
     companion object {
         private const val CLICK_DEBOUNCE_DELAY = 1000L
     }
-    private var moviesSearchPresenter:MoviesSearchPresenter? = null
 
     private val adapter = MoviesAdapter {
         if (clickDebounce()) {
@@ -68,16 +68,6 @@ class MoviesActivity : Activity(), MoviesView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_movies)
 
-        moviesSearchPresenter = (this.applicationContext as? MoviesApplication)?.moviesSearchPresenter
-
-        if (moviesSearchPresenter == null) {
-            moviesSearchPresenter = Creator.provideMoviesSearchPresenter(
-                context = this.applicationContext
-            )
-            (this.application as? MoviesApplication)?.moviesSearchPresenter = moviesSearchPresenter
-        }
-        moviesSearchPresenter?.attachView(this)
-
         placeholderMessage = findViewById(R.id.placeholderMessage)
         queryInput = findViewById(R.id.queryInput)
         moviesList = findViewById(R.id.locations)
@@ -91,7 +81,7 @@ class MoviesActivity : Activity(), MoviesView {
                 }
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    moviesSearchPresenter?.searchDebounce(
+                    moviesSearchPresenter.searchDebounce(
                         changedText = s?.toString() ?: ""
                     )
                 }
@@ -101,33 +91,6 @@ class MoviesActivity : Activity(), MoviesView {
             }
         textWatcher?.let { queryInput.addTextChangedListener(it) }
     }
-
-    override fun onPause() {
-        super.onPause()
-        moviesSearchPresenter?.detachView()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        moviesSearchPresenter?.detachView()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        moviesSearchPresenter?.detachView()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        textWatcher?.let { queryInput.removeTextChangedListener(it) }
-        moviesSearchPresenter?.onDestroy()
-        moviesSearchPresenter?.detachView()
-
-        if (isFinishing){
-            (this.application as? MoviesApplication)?.moviesSearchPresenter = null
-        }
-    }
-
 
     private fun clickDebounce() : Boolean {
         val current = isClickAllowed

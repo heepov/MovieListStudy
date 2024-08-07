@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("kotlin-kapt")
 }
 
 android {
@@ -36,6 +37,11 @@ android {
 }
 
 dependencies {
+    val moxyVersion = "2.2.2"
+    implementation ("com.github.moxy-community:moxy:$moxyVersion")
+    implementation ("com.github.moxy-community:moxy-android:$moxyVersion")
+    kapt ("com.github.moxy-community:moxy-compiler:$moxyVersion")
+
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.14.2")
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
